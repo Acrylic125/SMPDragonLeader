@@ -1,0 +1,11 @@
+name: SmpDragonLeaderboard
+version: ${project.version}
+main: com.acrylic.smpdl.SMPDL
+api-version: 1.16
+authors: [ Acrylic ]
+description: Simple dragon leaderboard plugin.
+commands:
+  sdl:
+    description: Base command.
+    usage: /<command>
+    permission: sdl.admin
