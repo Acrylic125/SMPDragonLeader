@@ -11,7 +11,7 @@ import java.util.function.Consumer;
 
 public class Captures implements Runnable {
 
-    private final Map<Class<?>, Map<String, Capture<?>>> captureMap = new HashMap<>();
+    private final Map<String, Map<String, Capture<?>>> captureMap = new HashMap<>();
     private CaptureDisplay captureDisplay;
 
     public CaptureDisplay getCaptureDisplay() {
@@ -22,7 +22,7 @@ public class Captures implements Runnable {
         this.captureDisplay = captureDisplay;
     }
 
-    public <T> Map<String, Capture<?>> getOrCreateTypeMap(Class<T> captureType) {
+    public <T> Map<String, Capture<?>> getOrCreateTypeMap(String captureType) {
         Map<String, Capture<?>> captureMap = this.captureMap.get(captureType);
         if (captureMap == null)
             captureMap = new HashMap<>();
@@ -30,22 +30,22 @@ public class Captures implements Runnable {
         return captureMap;
     }
 
-    public <T> void addCapture(Class<T> captureType, String captureName, Capture<T> capture) {
+    public <T> void addCapture(String captureType, String captureName, Capture<T> capture) {
         Map<String, Capture<?>> captureMap = getOrCreateTypeMap(captureType);
         captureMap.put(captureName, capture);
     }
 
-    public <T> void removeCapture(Class<T> captureType, String captureName) {
+    public <T> void removeCapture(String captureType, String captureName) {
         Map<String, Capture<?>> captureMap = getOrCreateTypeMap(captureType);
         captureMap.remove(captureName);
     }
 
-    public <T> void iterateCaptures(Class<T> captureType, BiConsumer<String, Capture<?>> action) {
+    public <T> void iterateCaptures(String captureType, BiConsumer<String, Capture<?>> action) {
         Map<String, Capture<?>> captureMap = getOrCreateTypeMap(captureType);
         captureMap.forEach(action);
     }
 
-    public void iterateAll(Consumer<Class<?>> actionClass, BiConsumer<String, Capture<?>> action) {
+    public void iterateAll(Consumer<String> actionClass, BiConsumer<String, Capture<?>> action) {
         captureMap.forEach((aClass, stringCaptureMap) -> {
             actionClass.accept(aClass);
             stringCaptureMap.forEach(action);

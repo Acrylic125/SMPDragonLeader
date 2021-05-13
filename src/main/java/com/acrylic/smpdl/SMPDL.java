@@ -4,15 +4,19 @@ import com.acrylic.smpdl.captures.Capture;
 import com.acrylic.smpdl.captures.EventCapture;
 import com.acrylic.smpdl.impl.Captures;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Objects;
+import java.util.UUID;
 
 public final class SMPDL
         extends JavaPlugin
@@ -48,13 +52,22 @@ public final class SMPDL
     @EventHandler
     public void listen(EntityDamageByEntityEvent event) {
         Entity damager = event.getDamager();
-        if (damager instanceof Player) {
-            Player playerDamager = (Player) damager;
-            captures.iterateCaptures(EntityDamageByEntityEvent.class, (s, capture) -> {
+        Player attacker = null;
+        if (damager instanceof Arrow) {
+            ProjectileSource shooter = ((Arrow) damager).getShooter();
+            if (shooter instanceof Player) {
+                attacker = (Player) shooter;
+            }
+        } else if (damager instanceof Player) {
+            attacker = (Player) damager;
+        }
+        if (attacker != null) {
+            UUID id = attacker.getUniqueId();
+            captures.iterateCaptures("EntityDamageByEntityEvent", (s, capture) -> {
                 if (capture instanceof EventCapture && capture.isTracking()) {
                     Capture<EntityDamageByEntityEvent> eventCapture = (Capture<EntityDamageByEntityEvent>) capture;
                     if (eventCapture.trackAction(event))
-                        eventCapture.getCaptureCache().addScore(playerDamager.getUniqueId(), eventCapture.getScoreAmount(event));
+                        eventCapture.getCaptureCache().addScore(id, eventCapture.getScoreAmount(event));
                 }
             });
         }

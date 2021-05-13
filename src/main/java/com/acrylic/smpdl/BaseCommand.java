@@ -19,7 +19,7 @@ import java.util.function.Predicate;
 
 public class BaseCommand implements CommandExecutor {
 
-    private final Predicate<EntityDamageByEntityEvent> condition = event -> event.getEntityType() == EntityType.ZOGLIN;
+    private final Predicate<EntityDamageByEntityEvent> condition = event -> event.getEntityType() == EntityType.ENDER_DRAGON;
     private final ScoreSource<EntityDamageByEntityEvent> scoreSource = EntityDamageEvent::getDamage;
     private final String[] helpArray = Utils.colorize(new String[] {
             "&e&lSMP Dragon Leaderboard",
@@ -46,7 +46,7 @@ public class BaseCommand implements CommandExecutor {
                     else
                         sendHelp(sender);
                     break;
-                case "TERMINATE":
+                case "DELETE":
                     if (argLength >= 2)
                         terminate(sender, args[1]);
                     else
@@ -99,17 +99,18 @@ public class BaseCommand implements CommandExecutor {
 
     private void create(CommandSender sender, String capture) {
         sender.sendMessage(Utils.colorize("&aCreate capture, &f" + capture + "&a."));
-        SMPDL.getSmpDl().getCaptures().addCapture(EntityDamageByEntityEvent.class, capture, new EventCapture<>(condition, scoreSource));
+        SMPDL.getSmpDl().getCaptures().addCapture("EntityDamageByEntityEvent", capture, new EventCapture<>(condition, scoreSource));
     }
 
     private void terminate(CommandSender sender, String capture) {
         sender.sendMessage(Utils.colorize("&cTerminate capture, &f" + capture + "&c."));
-        SMPDL.getSmpDl().getCaptures().removeCapture(EntityDamageByEntityEvent.class, capture);
+        SMPDL.getSmpDl().getCaptures().setCaptureDisplay(null);
+        SMPDL.getSmpDl().getCaptures().removeCapture("EntityDamageByEntityEvent", capture);
     }
 
     private void display(CommandSender sender, String capture) {
         Capture<?> captureObj = SMPDL.getSmpDl()
-                .getCaptures().getOrCreateTypeMap(EntityDamageByEntityEvent.class)
+                .getCaptures().getOrCreateTypeMap("EntityDamageByEntityEvent")
                 .get(capture);
         if (captureObj == null) {
             sender.sendMessage(Utils.colorize("&cNo such capture named &c&n" + capture + "&r&c."));
@@ -126,7 +127,7 @@ public class BaseCommand implements CommandExecutor {
 
     private void reset(CommandSender sender, String capture) {
         Capture<?> captureObj = SMPDL.getSmpDl()
-                .getCaptures().getOrCreateTypeMap(EntityDamageByEntityEvent.class)
+                .getCaptures().getOrCreateTypeMap("EntityDamageByEntityEvent")
                 .get(capture);
         if (captureObj == null) {
             sender.sendMessage(Utils.colorize("&cNo such capture named &c&n" + capture + "&r&c."));
@@ -137,7 +138,7 @@ public class BaseCommand implements CommandExecutor {
 
     private void toggleTracking(CommandSender sender, String capture, boolean b) {
         Capture<?> captureObj = SMPDL.getSmpDl()
-                .getCaptures().getOrCreateTypeMap(EntityDamageByEntityEvent.class)
+                .getCaptures().getOrCreateTypeMap("EntityDamageByEntityEvent")
                 .get(capture);
         if (captureObj == null) {
             sender.sendMessage(Utils.colorize("&cNo such capture named &c&n" + capture + "&r&c."));
@@ -163,7 +164,7 @@ public class BaseCommand implements CommandExecutor {
 
     private void broadcast(CommandSender sender, String capture) {
         Capture<?> captureObj = SMPDL.getSmpDl()
-                                    .getCaptures().getOrCreateTypeMap(EntityDamageByEntityEvent.class)
+                                    .getCaptures().getOrCreateTypeMap("EntityDamageByEntityEvent")
                                     .get(capture);
         if (captureObj == null) {
             sender.sendMessage(Utils.colorize("&cNo such capture named &c&n" + capture + "&r&c."));
