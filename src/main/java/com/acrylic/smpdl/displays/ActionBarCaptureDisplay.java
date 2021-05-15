@@ -41,7 +41,7 @@ public class ActionBarCaptureDisplay implements CaptureDisplay {
 
     @Override
     public void displayTo(Player player) {
-        String out = displayAs.replaceAll("%player_score%", capture.getCaptureCache().getCaptureResult(player) + "");
+        String out = displayAs.replaceAll("%player_score%", Utils.round2dp(capture.getCaptureCache().getCaptureResult(player)) + "");
         player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(Utils.colorize(out)));
     }
 

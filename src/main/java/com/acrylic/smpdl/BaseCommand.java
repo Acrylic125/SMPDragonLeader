@@ -5,15 +5,18 @@ import com.acrylic.smpdl.captures.EventCapture;
 import com.acrylic.smpdl.captures.ScoreSource;
 import com.acrylic.smpdl.displays.ActionBarCaptureDisplay;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.EnderDragon;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 
 import java.util.Locale;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 
@@ -23,6 +26,7 @@ public class BaseCommand implements CommandExecutor {
     private final ScoreSource<EntityDamageByEntityEvent> scoreSource = EntityDamageEvent::getDamage;
     private final String[] helpArray = Utils.colorize(new String[] {
             "&e&lSMP Dragon Leaderboard",
+            "/sdl spawndragon <eor/wor/at> &7Spawn dragon based on the given flag.",
             "/sdl display <capture name> &7Displays capture.",
             "/sdl removedisplay &7Removes capture.",
             "/sdl start <capture name> &7Start tracking.",
@@ -40,6 +44,12 @@ public class BaseCommand implements CommandExecutor {
         if (argLength > 0) {
             String arg = args[0].toUpperCase(Locale.ROOT);
             switch (arg) {
+                case "SPAWNDRAGON":
+                    if (argLength >= 2)
+                        spawnDragon(sender, args[1]);
+                    else
+                        sendHelp(sender);
+                    break;
                 case "CREATE":
                     if (argLength >= 2)
                         create(sender, args[1]);
@@ -95,6 +105,32 @@ public class BaseCommand implements CommandExecutor {
             sendHelp(sender);
         }
         return true;
+    }
+
+    private void spawnDragon(CommandSender sender, String flag) {
+        if (sender instanceof Player) {
+            Player player = (Player) sender;
+            flag = flag.toUpperCase(Locale.ROOT);
+            Location at = null;
+            switch (flag) {
+                case "AT":
+                    at = player.getLocation();
+                    break;
+                case "WOR":
+                    at = new Location(player.getWorld(), (ThreadLocalRandom.current().nextFloat() * 100) - 50, 100, (ThreadLocalRandom.current().nextFloat() * 100) - 50);
+                    break;
+                case "EOR":
+                    at = new Location(Bukkit.getWorld("world_the_end"), (ThreadLocalRandom.current().nextFloat() * 100) - 50, 100, (ThreadLocalRandom.current().nextFloat() * 100) - 50);
+                    break;
+            }
+            if (at != null) {
+                EnderDragon dragon = at.getWorld()
+                        .spawn(at, EnderDragon.class);
+                dragon.setRemoveWhenFarAway(false);
+                dragon.setPhase(EnderDragon.Phase.CIRCLING);
+                sender.sendMessage(Utils.colorize("&eSpawned Dragon at &f" + at.getX() + "&7x &f" + at.getY() + "&7y &f" + at.getZ() + "&7z&e."));
+            }
+        }
     }
 
     private void create(CommandSender sender, String capture) {

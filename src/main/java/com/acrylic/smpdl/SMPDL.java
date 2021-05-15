@@ -4,15 +4,16 @@ import com.acrylic.smpdl.captures.Capture;
 import com.acrylic.smpdl.captures.EventCapture;
 import com.acrylic.smpdl.impl.Captures;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDamageByBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Objects;
@@ -50,18 +51,23 @@ public final class SMPDL
     }
 
     @EventHandler
-    public void listen(EntityDamageByEntityEvent event) {
-        Entity damager = event.getDamager();
-        Player attacker = null;
-        if (damager instanceof Arrow) {
-            ProjectileSource shooter = ((Arrow) damager).getShooter();
-            if (shooter instanceof Player) {
-                attacker = (Player) shooter;
+    public void listen(EntityDeathEvent event) {
+        LivingEntity entity = event.getEntity();
+        if (event.getEntity().getType() == EntityType.ENDER_DRAGON) {
+            Bukkit.broadcastMessage(Utils.colorize("&d&lAn Ender Dragon has been slained!"));
+            EntityDamageEvent dmgEvent = entity.getLastDamageCause();
+            if (dmgEvent instanceof EntityDamageByEntityEvent) {
+                Entity attacker = Utils.getAttackerFrom((EntityDamageByEntityEvent) dmgEvent);
+                if (attacker instanceof Player)
+                    Bukkit.broadcastMessage(Utils.colorize("&d&l  The final blow was dealt by: &r&f" + attacker.getName() + "&d&l."));
             }
-        } else if (damager instanceof Player) {
-            attacker = (Player) damager;
         }
-        if (attacker != null) {
+    }
+
+    @EventHandler
+    public void listen(EntityDamageByEntityEvent event) {
+        LivingEntity attacker = Utils.getAttackerFrom(event);
+        if (attacker instanceof Player) {
             UUID id = attacker.getUniqueId();
             captures.iterateCaptures("EntityDamageByEntityEvent", (s, capture) -> {
                 if (capture instanceof EventCapture && capture.isTracking()) {
